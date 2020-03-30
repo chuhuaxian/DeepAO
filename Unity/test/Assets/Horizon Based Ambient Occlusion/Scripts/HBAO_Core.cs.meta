@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: e1580e32f765c994b86a57bb3c49fe75
+timeCreated: 1478865291
+licenseType: Store
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - noiseTex: {instanceID: 0}
+  - quadMesh: {instanceID: 0}
+  - hbaoShader: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

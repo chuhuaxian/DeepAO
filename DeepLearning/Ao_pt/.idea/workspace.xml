@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="a54a1f4a-b656-4c1e-9fe9-ab36b971079d" name="Default Changelist" comment="" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="ProjectId" id="1PXrVzksL36rTA5oQTkKwxevtmW" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showExcludedFiles" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+  </component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="D:\Projects\Pycharm\Ao_pt\Others" />
+      <recent name="D:\Projects\Pycharm\Ao_pt\Orthers" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Python.ds_eval">
+    <configuration name="compute_normal" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="Ao_pt" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/Others" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Others/compute_normal.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="demo" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="Ao_pt" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/demo.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="ds_eval" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="Ao_pt" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/ds_eval.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="ds_train" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="Ao_pt" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/ds_train.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="remove_dirty_data" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="Ao_pt" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/Others" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Others/remove_dirty_data.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <list>
+      <item itemvalue="Python.compute_normal" />
+      <item itemvalue="Python.demo" />
+      <item itemvalue="Python.ds_eval" />
+      <item itemvalue="Python.ds_train" />
+      <item itemvalue="Python.remove_dirty_data" />
+    </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.ds_eval" />
+        <item itemvalue="Python.compute_normal" />
+        <item itemvalue="Python.demo" />
+        <item itemvalue="Python.ds_train" />
+        <item itemvalue="Python.remove_dirty_data" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="ServiceViewManager">
+    <option name="viewStates">
+      <list>
+        <serviceView>
+          <treeState>
+            <expand />
+            <select />
+          </treeState>
+        </serviceView>
+      </list>
+    </option>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="a54a1f4a-b656-4c1e-9fe9-ab36b971079d" name="Default Changelist" comment="" />
+      <created>1565414907534</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1565414907534</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="740" y="278" key="FileChooserDialogImpl" timestamp="1577255527502">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="740" y="278" key="FileChooserDialogImpl/0.0.1920.1040@0.0.1920.1040" timestamp="1577255527502" />
+    <state width="1345" height="115" key="GridCell.Tab.0.bottom" timestamp="1580830852387">
+      <screen x="0" y="0" width="1366" height="728" />
+    </state>
+    <state width="1345" height="115" key="GridCell.Tab.0.bottom/0.0.1366.728@0.0.1366.728" timestamp="1580830852387" />
+    <state width="1419" height="357" key="GridCell.Tab.0.bottom/0.0.1440.1039@0.0.1440.1039" timestamp="1576686507166" />
+    <state width="1755" height="268" key="GridCell.Tab.0.bottom/0.0.1776.823@0.0.1776.823" timestamp="1576725645750" />
+    <state width="1479" height="349" key="GridCell.Tab.0.bottom/0.0.1920.1040@0.0.1920.1040" timestamp="1577522250781" />
+    <state width="1345" height="115" key="GridCell.Tab.0.center" timestamp="1580830852387">
+      <screen x="0" y="0" width="1366" height="728" />
+    </state>
+    <state width="1345" height="115" key="GridCell.Tab.0.center/0.0.1366.728@0.0.1366.728" timestamp="1580830852387" />
+    <state width="1419" height="357" key="GridCell.Tab.0.center/0.0.1440.1039@0.0.1440.1039" timestamp="1576686507166" />
+    <state width="1755" height="268" key="GridCell.Tab.0.center/0.0.1776.823@0.0.1776.823" timestamp="1576725645750" />
+    <state width="1479" height="349" key="GridCell.Tab.0.center/0.0.1920.1040@0.0.1920.1040" timestamp="1577522250781" />
+    <state width="1345" height="115" key="GridCell.Tab.0.left" timestamp="1580830852387">
+      <screen x="0" y="0" width="1366" height="728" />
+    </state>
+    <state width="1345" height="115" key="GridCell.Tab.0.left/0.0.1366.728@0.0.1366.728" timestamp="1580830852387" />
+    <state width="1419" height="357" key="GridCell.Tab.0.left/0.0.1440.1039@0.0.1440.1039" timestamp="1576686507166" />
+    <state width="1755" height="268" key="GridCell.Tab.0.left/0.0.1776.823@0.0.1776.823" timestamp="1576725645750" />
+    <state width="1479" height="349" key="GridCell.Tab.0.left/0.0.1920.1040@0.0.1920.1040" timestamp="1577522250781" />
+    <state width="1345" height="115" key="GridCell.Tab.0.right" timestamp="1580830852387">
+      <screen x="0" y="0" width="1366" height="728" />
+    </state>
+    <state width="1345" height="115" key="GridCell.Tab.0.right/0.0.1366.728@0.0.1366.728" timestamp="1580830852387" />
+    <state width="1419" height="357" key="GridCell.Tab.0.right/0.0.1440.1039@0.0.1440.1039" timestamp="1576686507166" />
+    <state width="1755" height="268" key="GridCell.Tab.0.right/0.0.1776.823@0.0.1776.823" timestamp="1576725645750" />
+    <state width="1479" height="349" key="GridCell.Tab.0.right/0.0.1920.1040@0.0.1920.1040" timestamp="1577522250781" />
+    <state width="1479" height="205" key="GridCell.Tab.1.bottom" timestamp="1577522202894">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1479" height="205" key="GridCell.Tab.1.bottom/0.0.1920.1040@0.0.1920.1040" timestamp="1577522202894" />
+    <state width="1479" height="205" key="GridCell.Tab.1.center" timestamp="1577522202894">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1479" height="205" key="GridCell.Tab.1.center/0.0.1920.1040@0.0.1920.1040" timestamp="1577522202894" />
+    <state width="1479" height="205" key="GridCell.Tab.1.left" timestamp="1577522202894">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1479" height="205" key="GridCell.Tab.1.left/0.0.1920.1040@0.0.1920.1040" timestamp="1577522202894" />
+    <state width="1479" height="205" key="GridCell.Tab.1.right" timestamp="1577522202894">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1479" height="205" key="GridCell.Tab.1.right/0.0.1920.1040@0.0.1920.1040" timestamp="1577522202894" />
+    <state x="463" y="165" key="SettingsEditor" timestamp="1575886194407">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="463" y="165" key="SettingsEditor/0.0.1920.1040@0.0.1920.1040" timestamp="1575886194407" />
+    <state x="707" y="163" width="626" height="720" key="find.popup" timestamp="1575709521589">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="707" y="163" width="626" height="720" key="find.popup/0.0.1920.1040@0.0.1920.1040" timestamp="1575709521589" />
+    <state x="623" y="225" width="672" height="678" key="search.everywhere.popup" timestamp="1576227418789">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="623" y="225" width="672" height="678" key="search.everywhere.popup/0.0.1920.1040@0.0.1920.1040" timestamp="1576227418789" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$USER_HOME$/AppData/Local/Continuum/anaconda3/envs/tc-py36/Lib/site-packages/torchvision/datasets/mnist.py</url>
+          <option name="timeStamp" value="49" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Others/compare_filters.py</url>
+          <line>10</line>
+          <option name="timeStamp" value="73" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Others/bar_img.py</url>
+          <line>41</line>
+          <option name="timeStamp" value="76" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Models/NANO.py</url>
+          <line>964</line>
+          <option name="timeStamp" value="87" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/demo.py</url>
+          <line>77</line>
+          <option name="timeStamp" value="88" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+    <watches-manager>
+      <configuration name="PythonConfigurationType">
+        <watch expression="pretrain.'generator.inc.conv.conv.0.weight' (1528542083624).data._version" />
+      </configuration>
+    </watches-manager>
+  </component>
+</project>

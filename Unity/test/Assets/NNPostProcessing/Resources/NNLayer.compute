@@ -1,0 +1,512 @@
+﻿// neural network post-processing
+//#pragma kernel CSMain THREADS=1
+//#pragma kernel HBAO THREADS=1
+
+#pragma kernel LeakyReLU THREADS=1 
+#pragma kernel BatchNormalization THREADS=1  
+#pragma kernel InputLayer THREADS=1 
+#pragma kernel InputLayer_v1 THREADS = 1 
+#pragma kernel OutputLayer  THREADS=1 
+#pragma kernel DebugLayer  THREADS=1 
+#pragma kernel UpSampling2D THREADS=1 
+#pragma kernel UpAndCat THREADS=1 
+#pragma kernel MaxPooling2D THREADS=1 
+#pragma kernel AvgPooling2D THREADS=1 
+
+#pragma kernel ReLU THREADS=1 
+
+#pragma kernel Tanh THREADS=1 
+#pragma kernel Add THREADS=1 
+#pragma kernel Concatenate THREADS=1 
+#pragma kernel Conv2D_4 THREADS=4 
+#pragma kernel Conv2D_8 THREADS=8
+#pragma kernel Conv2D_16 THREADS=16
+#pragma kernel Conv2D_32 THREADS=32
+#pragma kernel Conv2D_64 THREADS=64
+//#pragma kernel Conv2D_128 THREADS=128
+//#pragma kernel Conv2D_256 THREADS=256
+//#pragma kernel Conv2D_512 THREADS=512
+//#pragma kernel Conv2D_1024 THREADS=1024
+// THREADS 宏定义
+
+
+//self.inc = inconv(n_channels, 64)
+//self.down1 = down(64, 128)
+//self.down2 = down(128, 256)
+//self.down3 = down(256, 512)
+//self.down4 = down(512, 512)
+//self.up1 = up(1024, 256)
+//self.up2 = up(512, 128)
+//self.up3 = up(256, 64)
+//self.up4 = up(128, 64)
+//self.outc = outconv(64, n_classes)
+
+
+Texture2D<float4> InputImage;
+Texture2D<float> InputImage1;
+RWTexture2D<float> OutputImage;
+
+
+
+Buffer<float> LayerInput0;
+Buffer<float> LayerInput1;
+RWBuffer<float> LayerOutput;
+Buffer<float> Weights;
+Buffer<float> Weights1;
+
+uniform uint4 WeightsShape;//for conv2d: n_Hk, n_Wk, n_Ci, n_Ck; for other: size, 0, 0, 0
+uniform uint2 Stride;
+uniform uint3 InputShape;//n_Hi, n_Wi, n_Ci
+uniform uint3 OutputShape;//n_Ho, n_Wo, n_Co=n_Ck
+uniform uint3 InputShapeIdMultiplier;
+uniform uint3 InputShapeIdMultiplier1;
+uniform uint3 OutputShapeIdMultiplier;
+uniform uint4 WeightsShapeIdMultiplier;
+uniform uint2 Size;
+uniform float Alpha;
+
+float4x4 unity_CameraProjection;
+
+#define n_Wk WeightsShape.y
+#define n_Hk WeightsShape.x
+#define n_Ck WeightsShape.w
+#define n_Wi InputShape.y
+#define n_Hi InputShape.x
+#define n_Ci InputShape.z
+#define n_Wo OutputShape.y
+#define n_Ho OutputShape.x
+#define n_Co OutputShape.z
+
+
+//使用GroupShared可以将一个变量标记为组内共享（又叫TGSM(2)）。
+//使用这种变量，就可以在Thread Group内进行通讯。
+groupshared float cache[THREADS*32];
+
+
+// [KernelId, 1, OutputShape.y, Mathf.CeilToInt(OutputShape.x/4.0f)]  // 需要空间关系的就要分配城这样？
+[numthreads(THREADS, 1, 16)]
+#define KERNEL_NAME(x, y) x##_##y
+void KERNEL_NAME(Conv2D, THREADS)
+(uint3 id : SV_DispatchThreadID, uint3 groupid : SV_GroupThreadID)
+{
+	//id: outputshape
+	uint2 InputId = id.zy * Stride;
+
+	float bias = Weights[n_Wk * n_Hk * n_Ci * n_Ck + id.x];
+
+	float gamma = Weights[n_Wk * n_Hk * n_Ci * n_Ck + n_Ck+ id.x * 4];  // id.y -> (0-OutputShape.z), batchnorm只跟通道相关，因此只需确定是哪个通道的就能计算出weight的位置
+	float beta = Weights[n_Wk * n_Hk * n_Ci * n_Ck + n_Ck + id.x * 4 + 1];
+	float mov_mean = Weights[n_Wk * n_Hk * n_Ci * n_Ck + n_Ck + id.x * 4 + 2];
+	float mov_variance = Weights[n_Wk * n_Hk * n_Ci * n_Ck + n_Ck + id.x * 4 + 3];
+
+
+	float conv = 0;
+
+	uint3 offset = uint3((n_Wk - 1) / 2, (n_Hk - 1) / 2, 0);
+	
+	//each kernel x
+	for (uint p = 0; p < n_Wk; p++) {
+		//each kernel y
+		for (uint q = 0; q < n_Hk; q++) {
+			
+			int3 input_id = int3(InputId.xy, id.x) - int3(offset) + int3(p, q, 0);
+
+			if (id.x < n_Ci) { 
+				//reflect padding  // same padding ?
+
+				// zeros padding
+				cache[groupid.z * THREADS + id.x] = input_id.x < 0 || input_id.y < 0 || input_id.x >(int)InputShape.x || input_id.y >(int)InputShape.y-1?
+					0: LayerInput0[dot(input_id.xyz, InputShapeIdMultiplier)];
+
+				// reflect padding
+			/*	input_id.x = input_id.x < 0 ? -input_id.x : input_id.x;
+				input_id.y = input_id.y < 0 ? -input_id.y : input_id.y;
+				input_id.x = input_id.x > (int)InputShape.x ? 2 * (int)InputShape.x - input_id.x : input_id.x;
+				input_id.y = input_id.y > (int)InputShape.y ? 2 * (int)InputShape.y - input_id.y : input_id.y;*/
+
+				// same padding
+				/*input_id.x = input_id.x < 0 ? 0 : input_id.x;
+				input_id.y = input_id.y < 0 ? 0 : input_id.y;
+				input_id.x = input_id.x > (int)InputShape.x ? (int)InputShape.x : input_id.x;
+				input_id.y = input_id.y > (int)InputShape.y ? (int)InputShape.y : input_id.y;*/
+				
+				//cache[groupid.z * THREADS + id.x] = LayerInput0[dot(input_id.xyz, InputShapeIdMultiplier)]; // cache[THREADS*4]; 得到当前像素的channel集合()
+			}
+			
+			GroupMemoryBarrierWithGroupSync();  // GroupMemoryBarrier是等待对GroupShared变量的访问。
+			
+			//each layer input, n_Ci = kernel z
+			for (uint w = 0; w < n_Ci; w++) 
+			{
+				conv += cache[groupid.z * THREADS + w] * Weights[dot(uint4(p, q, w, id.x), WeightsShapeIdMultiplier)]; 
+				//当前像素的channel集合和weight相乘之后累加，累加次数为n_Wk*n_Hk(滑动窗口)
+			}
+
+			GroupMemoryBarrierWithGroupSync();
+		}
+	}
+	if (id.x < n_Co) 
+	{
+		if (n_Co == 1) 
+		{
+			LayerOutput[dot(id.zyx, OutputShapeIdMultiplier)] = conv + bias;
+			/*float value = (conv + bias - mov_mean) * gamma / sqrt(mov_variance + 1e-5) + beta;
+			LayerOutput[dot(id.zyx, OutputShapeIdMultiplier)] = value;*/
+
+		}
+		else 
+		{
+			float value = (conv + bias - mov_mean) * gamma / sqrt(mov_variance + 1e-5) + beta;
+			LayerOutput[dot(id.zyx, OutputShapeIdMultiplier)] = value > 0 ? value : 0.01*value;
+		}
+
+	}
+}
+
+// [Mathf.CeilToInt(OutputShape.x * OutputShape.y / 128.0f), OutputShape.z, 1]
+//momentum trained, take parameter as population mean/std
+[numthreads(128, 1, 1)]
+void BatchNormalization(const uint3 id : SV_DispatchThreadID)
+{
+	float gamma = Weights[id.y * 4];  // id.y -> (0-OutputShape.z), batchnorm只跟通道相关，因此只需确定是哪个通道的就能计算出weight的位置
+	float beta = Weights[id.y * 4 + 1];
+	float mov_mean = Weights[id.y * 4 + 2];
+	float mov_variance = Weights[id.y * 4 + 3];
+
+	float rescale = sqrt(mov_variance + 1e-5);
+	rescale = gamma / rescale;
+	uint idx = id.x * n_Ci + id.y;  // n_Ci -> input channel
+	float value = LayerInput0[idx] * rescale - mov_mean * rescale + beta;
+	LayerOutput[idx] = value > 0 ? value : 0.01*value;
+}
+
+// [ OutputShape.x / 8, OutputShape.y / 8, OutputShape.z]
+[numthreads(16, 16, 1)]
+void Concatenate(uint3 id : SV_DispatchThreadID)
+{
+	/*if (id.z < InputShape.z) {
+		LayerOutput[dot(id, OutputShapeIdMultiplier)] = LayerInput0[dot(id, InputShapeIdMultiplier)];
+	}
+	else {
+		LayerOutput[dot(id, OutputShapeIdMultiplier)] = LayerInput1[dot(uint3(id.xy, id.z - InputShape.z), InputShapeIdMultiplier1)];
+	}*/
+	LayerOutput[dot(id, OutputShapeIdMultiplier)] = id.z < InputShape.z ?
+		LayerInput0[dot(id, InputShapeIdMultiplier)] :
+		LayerInput1[dot(uint3(id.xy, id.z - InputShape.z), InputShapeIdMultiplier1)];
+}
+
+// [Mathf.CeilToInt(OutputShape.x / 8.0f), Mathf.CeilToInt(OutputShape.y / 8.0f), OutputShape.z]
+[numthreads(16, 16, 1)]
+void UpSampling2D(uint3 id : SV_DispatchThreadID)
+{	
+	//if (id.z < InputShape.z) {
+		half2 inputid = (half2)id.xy / (half2)Size.xy;
+
+		uint3 floor_inputid = uint3(floor(inputid), id.z);
+		half2 frac_inputid = inputid - floor_inputid.xy;
+		float bilinear_interp =
+			LayerInput0[dot(floor_inputid, InputShapeIdMultiplier)] * (1 - frac_inputid.x) * (1 - frac_inputid.y) +
+			LayerInput0[dot(floor_inputid + uint3(1, 0, 0), InputShapeIdMultiplier)] * (frac_inputid.x) * (1 - frac_inputid.y) +
+			LayerInput0[dot(floor_inputid + uint3(0, 1, 0), InputShapeIdMultiplier)] * (1 - frac_inputid.x) * (frac_inputid.y) +
+			LayerInput0[dot(floor_inputid + uint3(1, 1, 0), InputShapeIdMultiplier)] * (frac_inputid.x) * (frac_inputid.y);
+
+
+		LayerOutput[dot(id, OutputShapeIdMultiplier)] = bilinear_interp;
+	//}
+	//else 
+	//{
+	//	LayerOutput[dot(id, OutputShapeIdMultiplier)] = LayerInput1[dot(uint3(id.xy, id.z - InputShape.z), InputShapeIdMultiplier1)];
+	//}
+}
+
+
+// [Mathf.CeilToInt(OutputShape.x / 8.0f), Mathf.CeilToInt(OutputShape.y / 8.0f), OutputShape.z]
+[numthreads(8, 8, 1)]
+void UpAndCat(uint3 id : SV_DispatchThreadID)
+{
+	if (id.z < InputShape.z) {
+		half2 inputid = (half2)id.xy / (half2)Size.xy;
+
+		uint3 floor_inputid = uint3(floor(inputid), id.z);
+		half2 frac_inputid = inputid - floor_inputid.xy;
+		float bilinear_interp =
+			LayerInput0[dot(floor_inputid, InputShapeIdMultiplier)] * (1 - frac_inputid.x) * (1 - frac_inputid.y) +
+			LayerInput0[dot(floor_inputid + uint3(1, 0, 0), InputShapeIdMultiplier)] * (frac_inputid.x) * (1 - frac_inputid.y) +
+			LayerInput0[dot(floor_inputid + uint3(0, 1, 0), InputShapeIdMultiplier)] * (1 - frac_inputid.x) * (frac_inputid.y) +
+			LayerInput0[dot(floor_inputid + uint3(1, 1, 0), InputShapeIdMultiplier)] * (frac_inputid.x) * (frac_inputid.y);
+
+		LayerOutput[dot(id, OutputShapeIdMultiplier)] = bilinear_interp;
+	}
+	else 
+	{
+		LayerOutput[dot(id, OutputShapeIdMultiplier)] = LayerInput1[dot(uint3(id.xy, id.z - InputShape.z), InputShapeIdMultiplier1)];
+	}
+}
+
+[numthreads(16, 16, 1)]
+void MaxPooling2D(uint3 id : SV_DispatchThreadID)
+{
+	uint3 inputid = uint3(id.xy * Size.xy, id.z);
+	//float4 temp = {
+	//	LayerInput0[dot(inputid, InputShapeIdMultiplier)],
+	//	LayerInput0[dot(inputid + uint3(1, 0, 0), InputShapeIdMultiplier)],
+	//	LayerInput0[dot(inputid + uint3(0, 1, 0), InputShapeIdMultiplier)],
+	//	LayerInput0[dot(inputid + uint3(1, 1, 0), InputShapeIdMultiplier)] };
+
+	//LayerOutput[dot(id, OutputShapeIdMultiplier)] = max(max(temp[0], temp[1]), max(temp[2], temp[3]));
+
+	LayerOutput[dot(id, OutputShapeIdMultiplier)] = 0.25*(
+		LayerInput0[dot(inputid, InputShapeIdMultiplier)] +
+		LayerInput0[dot(inputid + uint3(1, 0, 0), InputShapeIdMultiplier)] +
+		LayerInput0[dot(inputid + uint3(0, 1, 0), InputShapeIdMultiplier)] +
+		LayerInput0[dot(inputid + uint3(1, 1, 0), InputShapeIdMultiplier)]);
+}
+
+[numthreads(8, 8, 1)]
+void AvgPooling2D(uint3 id : SV_DispatchThreadID)
+{
+	uint3 inputid = uint3(id.xy * Size.xy, id.z);
+
+	LayerOutput[dot(id, OutputShapeIdMultiplier)] = 0.25*(
+		LayerInput0[dot(inputid, InputShapeIdMultiplier)]+
+		LayerInput0[dot(inputid + uint3(1, 0, 0), InputShapeIdMultiplier)]+
+		LayerInput0[dot(inputid + uint3(0, 1, 0), InputShapeIdMultiplier)]+
+		LayerInput0[dot(inputid + uint3(1, 1, 0), InputShapeIdMultiplier)]);
+}
+
+
+
+// [Mathf.CeilToInt(InputShape.x / 8.0f), Mathf.CeilToInt(InputShape.y / 8.0f), 1]
+[numthreads(8, 8, 1)]
+void InputLayer(uint3 id : SV_DispatchThreadID)
+{
+	uint2 remapid = uint2(id.y, InputShape.x - 1 - id.x);
+	half4 remap = InputImage[remapid.xy];
+	/*if (InputShape.z == 4) {
+		half3 remap_dep = InputImage1[remapid.xy] * 2.0f - 1.0f;
+		LayerOutput[dot(uint3(id.xy, 3), InputShapeIdMultiplier)] = remap_dep.x;
+	}*/
+	LayerOutput[dot(uint3(id.xy, 0), InputShapeIdMultiplier)] = remap.x;
+	LayerOutput[dot(uint3(id.xy, 1), InputShapeIdMultiplier)] = remap.y;
+	LayerOutput[dot(uint3(id.xy, 2), InputShapeIdMultiplier)] = remap.z;
+	LayerOutput[dot(uint3(id.xy, 3), InputShapeIdMultiplier)] = remap.w;
+}
+
+// [Mathf.CeilToInt(InputShape.x / 8.0f), Mathf.CeilToInt(InputShape.y / 8.0f), 1]
+[numthreads(8, 8, 1)]
+void InputLayer_v1(uint3 id : SV_DispatchThreadID)
+{
+	uint2 remapid = uint2(id.y, InputShape.x - 1 - id.x);
+	half4 remap = InputImage[remapid.xy];
+	LayerOutput[dot(uint3(id.xy, 0), InputShapeIdMultiplier)] = remap.x;
+	LayerOutput[dot(uint3(id.xy, 1), InputShapeIdMultiplier)] = remap.y;
+	LayerOutput[dot(uint3(id.xy, 2), InputShapeIdMultiplier)] = remap.z;
+
+	/*if (InputShape.z == 4) {
+		half3 remap_dep = InputImage1[remapid.xy] * 2.0f - 1.0f;
+		LayerOutput[dot(uint3(id.xy, 3), InputShapeIdMultiplier)] = remap_dep.x;
+	}*/
+
+	LayerOutput[dot(uint3(id.xy, 3), InputShapeIdMultiplier)] = remap.w;
+}
+
+
+[numthreads(8, 8, 1)]
+void OutputLayer(uint3 id : SV_DispatchThreadID)
+{
+	uint2 remapid = uint2(id.y, InputShape.x - 1 - id.x);
+	float value = float(LayerInput0[dot(uint3(id.xy, 0), InputShapeIdMultiplier)]);
+	//value = value * (value * (value * 0.305306011 + 0.682171111) + 0.012522878);
+	OutputImage[remapid.xy] = value;
+}
+
+[numthreads(8, 8, 1)]
+void DebugLayer(uint3 id : SV_DispatchThreadID)
+{
+	uint2 remapid = uint2(id.y, InputShape.x - 1 - id.x);
+	OutputImage[remapid.xy] = saturate(float(LayerInput0[dot(uint3(id.xy, 0), InputShapeIdMultiplier)]));
+}
+
+
+// [Mathf.CeilToInt(OutputShape.x / 8.0f), Mathf.CeilToInt(OutputShape.y / 8.0f), OutputShape.z]
+[numthreads(8, 8, 1)]
+void Add(uint3 id : SV_DispatchThreadID)
+{
+	LayerOutput[dot(id, OutputShapeIdMultiplier)] = LayerInput0[dot(id, InputShapeIdMultiplier)] + LayerInput1[dot(id, InputShapeIdMultiplier)];
+}
+
+// [Mathf.CeilToInt(OutputShape.x * OutputShape.y * OutputShape.z / 128.0f), 1, 1]
+[numthreads(128, 1, 1)]  //id.xyz 分别代表？ wid,hei, channel? 那为什么是 id.x?
+void ReLU(uint3 id : SV_DispatchThreadID)
+{
+	LayerOutput[id.x] = LayerInput0[id.x] > 0 ? LayerInput0[id.x] : 0;
+}
+
+
+
+[numthreads(1024, 1, 1)]
+void LeakyReLU(uint3 id : SV_DispatchThreadID)
+{
+	LayerOutput[id.x] = LayerInput0[id.x] > 0 ? LayerInput0[id.x] : LayerInput0[id.x] * Alpha;
+}
+
+
+// [ Mathf.CeilToInt(OutputShape.x * OutputShape.y * OutputShape.z / 32.0f), 1, 1]
+[numthreads(32, 1, 1)]
+void Tanh(uint3 id : SV_DispatchThreadID)
+{
+	LayerOutput[id.x] = tanh(LayerInput0[id.x]);
+}
+
+
+//[numthreads(8, 8, 1)]
+//void OutputLayer(uint3 id : SV_DispatchThreadID)
+//{
+//	uint2 remapid = uint2(id.y, InputShape.x - 1 - id.x);
+//	OutputImage[remapid.xy] = saturate(half3(
+//		LayerInput0[dot(uint3(id.xy, 0), InputShapeIdMultiplier)] * 0.5f + 0.5f,
+//		LayerInput0[dot(uint3(id.xy, 1), InputShapeIdMultiplier)] * 0.5f + 0.5f,
+//		LayerInput0[dot(uint3(id.xy, 2), InputShapeIdMultiplier)] * 0.5f + 0.5f));
+//}
+
+// Each #kernel tells which function to compile; you can have many kernels
+
+
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+//RWTexture2D<float4> Result;
+//Texture2D inputTexture;
+//[numthreads(8, 8, 1)]
+//void CSMain(uint3 id : SV_DispatchThreadID)
+//{
+//
+//	uint2 inputid = id.xy * uint2(1, 1);
+//	//uint3 newid = uint3(id.xy, id.z);
+//	//float xx = inputTexture[newid];
+//	float4 temp =
+//	{
+//		inputTexture[inputid.xy].a,
+//		inputTexture[inputid.xy + uint2(1, 0)].a,
+//		inputTexture[inputid.xy + uint2(0, 1)].a,
+//		inputTexture[inputid.xy + uint2(1, 1)].a
+//	};
+//
+//	float max_value = temp[0];
+//	for (int i = 1; i < 4; i++)
+//	{
+//		if (max_value < temp[i])
+//		{
+//			max_value = temp[i];
+//		}
+//	}
+//
+//	 //TODO: insert actual code here!
+//	float R = inputTexture[inputid.xy].r;
+//	float G = inputTexture[inputid.xy].g;
+//	float B = inputTexture[inputid.xy].b;
+//	//float D = inputTexture[inputid.xy].a;
+//	float A = 1.0f;
+//	////float Y = R * 0.229 + G * 0.587 + B * 0.114;
+//	float D = max_value;
+//	Result[id.xy] = float4(D, D, D, A);
+//}
+//
+//uniform float4x4 cam_proj = float4x4(
+//	-0.715138, 0.000000, 0.000000, 0.000000,
+//	0.000000, 1.271356, 0.000000, 0.000000,
+//	-0.000000, 0.000000, -1.000200, -1.000000,
+//	0.000000, 0.000000, -0.200020, 0.000000);
+//
+//uniform float4x4 cam_inv_proj = float4x4(
+//	-1.398332, -0.000000, 0.000000, -0.000000,
+//	-0.000000, 0.786562, -0.000000, 0.000000,
+//	0.000000, -0.000000, 0.000000, -4.999500,
+//	-0.000000, 0.000000, -1.000000, 5.000499);
+//
+//
+//#define NDIRSAMPLES 8
+//#define NSTEPSAMPLES 8
+//uniform float clip_near = 0.1;
+//uniform float clip_far = 1000.0;
+//uniform float bias = 0.6;
+//uniform float radius = 1.0;
+//
+//
+//float perspective_depth(float depth, float near, float far) {
+//	return -((2 * near) / depth - far - near) / (far - near);
+//}
+//
+//float3 camera_space(float2 texcoord, float depth) 
+//{
+//	float4 position_clip = float4(float3(texcoord, perspective_depth(max(1 - depth, 1e-10), clip_near, clip_far)) * 2.0 - 1.0, 1.0);
+//	float4 position = mul(cam_inv_proj, position_clip);
+//	return position.xyz / position.w;
+//}
+//
+//float3 rand(float3 seed) 
+//{
+//	return 2.0*frac(sin(dot(seed, float3(12.9898, 78.233, 21.317))) * float3(43758.5453, 21383.21227, 20431.20563)) - 1.0;
+//}
+//
+//float3 ReconstructViewPosition(float2 uv, float depth)
+//{
+//	const float2 p11_22 = float2(unity_CameraProjection._11, unity_CameraProjection._22);
+//	const float2 p13_31 = float2(unity_CameraProjection._13, unity_CameraProjection._23);
+//	return float3((uv * 2 - 1 - p13_31) / p11_22 * depth, depth);
+//}
+
+
+//[numthreads(8, 8, 1)]
+//void HBAO(uint3 id : SV_DispatchThreadID)
+//{
+//	float2 directions[16] = 
+//	{
+//		float2(1.00, 0.00), float2(0.00, 1.00), float2(-1.00, 0.00), float2(0.00, -1.00),
+//		float2(0.50, 0.50), float2(-0.50, 0.50), float2(-0.50, -0.50), float2(0.50, -0.50),
+//		float2(0.34, 0.27), float2(0.66, -0.21), float2(0.76, 0.51), float2(-0.21, 0.00),
+//		float2(0.16, -0.24), float2(-0.45, -0.64), float2(0.23, 0.64), float2(0.18, -0.47) 
+//	};
+//
+//	float4 midl = inputTexture[id.xy].rgba;
+//
+//	float3 norm = float3(-1.0, -1.0, 1.0) * (midl.xyz*2.0 - 1.0);
+//	float3 base = camera_space((float2)id.xy, midl.w);
+//
+//	float3 base1 = ReconstructViewPosition((float2)id.xy/(float2)InputShape.xy, midl.w);
+//
+//	float3 seed = rand(base);
+//
+//	float occ = 0.0;
+//
+//	for (int i = 0; i < NDIRSAMPLES; i++) {
+//
+//		float angle = bias;
+//		float2 dir = reflect(normalize(seed.xy), normalize(directions[i]));
+//
+//		for (int j = 0; j < NSTEPSAMPLES; j++) 
+//		{
+//			float3 next = base + radius * (float(j + 1) / NSTEPSAMPLES) * float3(dir, 0.0);
+//			float4 ntex = mul(cam_proj, float4(next, 1));
+//			float depth = inputTexture[(uint2)(((ntex.xy / ntex.w)*0.5 + 0.5)*(float2)InputShape.xy)].w;
+//
+//			float3 actu = ReconstructViewPosition((ntex.xy / ntex.w)*0.5 + 0.5, depth);
+//			float3 hori = actu - base;
+//			float gamma = (3.141592 / 2.0) - acos(clamp(dot(norm, normalize(hori)), 0.0, 1.0));
+//			float scale = float(length(hori) < radius);
+//			float value = sin(gamma) - sin(angle);
+//			float attenuation = clamp(1.0 - pow(float(j + 1) / float(NSTEPSAMPLES), 2.0), 0.0, 1.0);
+//			occ += (gamma > angle) ? scale * attenuation * value : 0.0;
+//			angle = max(angle, gamma * value);
+//		}
+//	}
+//	occ *= 1;
+//	float ao = float(1.0 - occ / float(NDIRSAMPLES));
+//
+//	float D = ao;
+//	//base.z *= 1000;
+//	base = normalize(base);
+//	ao = base.x+100;
+//	base1.x /= 10000;
+//	Result[id.xy] = float4(base1.x, base1.x, base1.x, 1.0);
+//}
+

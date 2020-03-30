@@ -1,0 +1,12 @@
+fileFormatVersion: 2
+guid: 499676bc66de0f04cb8b2bc3050b4c29
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - _nnaoShader: {fileID: 4800000, guid: 8a650ab1213cafd418e42744c15ef9b8, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
