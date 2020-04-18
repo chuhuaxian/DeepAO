@@ -1,4 +1,4 @@
-# DeepAo: Efficient Screen Space Ambient Occlusion Generation via Deep Network
+# DeepAO: Efficient Screen Space Ambient Occlusion Generation via Deep Network
 This is the codes of the [DeepAO](https://ieeexplore.ieee.org/document/9052668) paper.
 
 ## Dataset Sample Visualization
