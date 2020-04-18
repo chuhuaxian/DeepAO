@@ -2,7 +2,7 @@
 This is the codes of the [DeepAO](https://ieeexplore.ieee.org/document/9052668) paper.
 
 ## Dataset Sample Visualization
-![Image text](image/DATASET.png)
+![Image text](img/DATASET.png)
 
 ## Dataset Generation Pipline  
 We use 3dsMax with VRay engine to create our dataset. Each labeled data of our AO dataset contains the AO map and its corresponding depth map and normal map. 
