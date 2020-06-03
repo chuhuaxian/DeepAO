@@ -2,7 +2,7 @@
 This is the codes of the [DeepAO](https://ieeexplore.ieee.org/document/9052668) paper.
 
 ## Dataset Sample Visualization
-The dataset of our paper can be download [here][https://pan.baidu.com/share/init?surl=hRUiFIEL16a2tE-0I_7Tsg].
+The dataset of our paper can be download [here](https://pan.baidu.com/share/init?surl=hRUiFIEL16a2tE-0I_7Tsg).
 The extraction code is : txja
 
 ![Image text](img/DATASET.png)
@@ -20,7 +20,7 @@ You can build your own dataset by the steps as follows:
 4. Use the Batch Rendering operation to render the scenes.     
 
 ## Citation 
-Please cite [our work](https://ieeexplore.ieee.org/document/9052668) if you use DeepAO.
+Please cite [our work](https://ieeexplore.ieee.org/document/9052668) if you use our code or dataset.
 
 ```
 @ARTICLE{DeepAO2020,
